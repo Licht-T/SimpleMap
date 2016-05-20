@@ -10,6 +10,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -33,6 +34,8 @@ public class MainActivity extends AppCompatActivity implements
     private GoogleApiClient googleApiClient;
     private LocationRequest locationRequest;
     private boolean requestingLocationUpdate;
+
+    private Location currentLocation;
 
     private enum UpdatingState {STOPPED, REQUESTING, STARTED}
 
@@ -67,6 +70,8 @@ public class MainActivity extends AppCompatActivity implements
         locationRequest.setInterval(10000);
         locationRequest.setFastestInterval(5000);
         locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+
+        currentLocation = null;
     }
 
     @Override
@@ -121,8 +126,11 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onLocationChanged(Location location) {
         Log.d(TAG, "onLocationChanged: " + location);
-        googleMap.animateCamera(CameraUpdateFactory
-                .newLatLng(new LatLng(location.getLatitude(), location.getLongitude())));
+        if (currentLocation == null){
+            googleMap.animateCamera(CameraUpdateFactory
+                   .newLatLng(new LatLng(location.getLatitude(), location.getLongitude())));
+        }
+        currentLocation = location;
     }
 
     @Override
@@ -157,5 +165,10 @@ public class MainActivity extends AppCompatActivity implements
         Log.d(TAG, "stopLocationUpdate");
         LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
         state = UpdatingState.STOPPED;
+    }
+
+    public void onClickCurrentLoc(View v) {
+        googleMap.animateCamera(CameraUpdateFactory
+               .newLatLng(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude())));
     }
 }
